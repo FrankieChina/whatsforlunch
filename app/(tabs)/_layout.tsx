@@ -1,6 +1,5 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
 
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import CustomTabBar from '@/components/CustomTabBar';
@@ -16,15 +15,15 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'DISCOVER',
-          tabBarIcon: ({ color, focused }) => <IconSymbol size={24} name="safari.fill" color={color} />,
+          title: 'KITCHEN',
+          tabBarIcon: ({ color, focused }) => <IconSymbol size={24} name="fork.knife" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="kitchen"
+        name="social"
         options={{
-          title: 'KITCHEN',
-          tabBarIcon: ({ color, focused }) => <IconSymbol size={24} name="fork.knife" color={color} />,
+          title: 'SOCIAL',
+          tabBarIcon: ({ color, focused }) => <IconSymbol size={24} name="person.fill" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -39,7 +38,7 @@ export default function TabLayout() {
         options={{
           title: 'PROFILE',
           tabBarIcon: ({ color, focused }) => (
-             <IconSymbol size={24} name="person.fill" color={color} />
+             <IconSymbol size={24} name="person.crop.circle" color={color} />
           ),
         }}
       />

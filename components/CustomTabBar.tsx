@@ -9,45 +9,56 @@ const TAB_WIDTH = width / 4; // We have 4 tabs instead of 5 for now
 const AnimatedSvg = Animated.createAnimatedComponent(Svg);
 
 export default function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
-  const activeIndex = useSharedValue(state.index);
+  // Only show routes that explicitly have a tabBarIcon (avoids breaking math when ghost files exist)
+  const visibleRoutes = state.routes.filter(route => {
+    const { options } = descriptors[route.key];
+    return options.tabBarIcon !== undefined && route.name !== 'explore';
+  });
+
+  const currentTabWidth = width / (visibleRoutes.length || 1);
+
+  // Find the current spatial index out of the visible routes
+  let spatialIndex = 0;
+  visibleRoutes.forEach((r, idx) => {
+    if (r.key === state.routes[state.index]?.key) {
+      spatialIndex = idx;
+    }
+  });
+
+  const activeIndex = useSharedValue(spatialIndex);
 
   useEffect(() => {
-    activeIndex.value = withSpring(state.index, { mass: 0.5, damping: 15, stiffness: 120 });
-  }, [state.index]);
+    activeIndex.value = withSpring(spatialIndex, { mass: 0.5, damping: 15, stiffness: 120 });
+  }, [spatialIndex]);
 
   const rIndicatorStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateX: activeIndex.value * TAB_WIDTH }],
+      transform: [{ translateX: activeIndex.value * currentTabWidth }],
     };
   });
 
-  const bgColors = ["#ffb457", "#ff96bd", "#9999fb", "#ffe797", "#cffff1"];
-
-  const rBackgroundStyle = useAnimatedStyle(() => {
-    // We animate background color slightly based on state.index (assuming 1 to 1 mapping or fallback to fixed color)
-    return {
-       // backgroundColor: bgColors[state.index % bgColors.length]
-    }
-  });
+  const curveWrapperLeft = (currentTabWidth / 2) - ((currentTabWidth * 1.5) / 2);
 
   return (
     <View style={styles.tabContainer}>
       {/* Background SVG Curve that slides */}
-      <Animated.View style={[styles.curveWrapper, rIndicatorStyle]}>
-        <Svg width={TAB_WIDTH * 1.5} height={60} viewBox="0 0 202.9 45.5" style={styles.svgCurve}>
+      <Animated.View style={[
+          styles.curveWrapper, 
+          rIndicatorStyle, 
+          { width: currentTabWidth * 1.5, left: curveWrapperLeft }
+        ]}>
+        <Svg width={currentTabWidth * 1.5} height={60} viewBox="0 0 202.9 45.5" style={styles.svgCurve}>
            <Path
-            fill="#F9F6F0" // Background color of the tab bar itself (cutout is inverted)
+            fill="#1d1d27"
             d="M6.7,45.5c5.7,0.1,14.1-0.4,23.3-4c5.7-2.3,9.9-5,18.1-10.5c10.7-7.1,11.8-9.2,20.6-14.3c5-2.9,9.2-5.2,15.2-7c7.1-2.1,13.3-2.3,17.6-2.1c4.2-0.2,10.5,0.1,17.6,2.1c6.1,1.8,10.2,4.1,15.2,7c8.8,5,9.9,7.1,20.6,14.3c8.3,5.5,12.4,8.2,18.1,10.5c9.2,3.6,17.6,4.2,23.3,4H6.7z"
           />
         </Svg>
       </Animated.View>
 
       <View style={styles.tabItemsContainer}>
-        {state.routes.map((route, index) => {
+        {visibleRoutes.map((route, visibleIndex) => {
           const { options } = descriptors[route.key];
-          const isFocused = state.index === index;
-          
-          if (route.name === 'explore') return null; // hide explore if it exists
+          const isFocused = spatialIndex === visibleIndex;
 
           const onPress = () => {
             const event = navigation.emit({
@@ -73,7 +84,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
             >
               {options.tabBarIcon && options.tabBarIcon({ 
                 focused: isFocused, 
-                color: isFocused ? '#FFFFFF' : '#9CA3AF', 
+                color: isFocused ? '#D95B00' : '#9CA3AF', 
                 size: 24 
               })}
             </TouchableOpacity>
