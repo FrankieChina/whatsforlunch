@@ -18,6 +18,16 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'safari.fill': 'explore',
+  'fork.knife': 'restaurant',
+  'person.2.fill': 'group',
+  'person.fill': 'person',
+  'magnifyingglass': 'search',
+  'gear': 'settings',
+  'leaf.fill': 'eco',
+  'mappin.and.ellipse': 'location-on',
+  'checkmark.seal.fill': 'verified',
+  'arrow.right': 'arrow-forward',
 } as IconMapping;
 
 /**
