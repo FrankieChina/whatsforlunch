@@ -1,7 +1,6 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { StyleSheet } from 'react-native';
+import MapView from 'react-native-maps';
 
 interface MapComponentProps {
   location: {
@@ -10,16 +9,9 @@ interface MapComponentProps {
       longitude: number;
     }
   } | null;
-  restaurants?: Array<{
-    id: string;
-    name: string;
-    latitude: number;
-    longitude: number;
-    tags: string[];
-  }>;
 }
 
-export default function MapComponent({ location, restaurants = [] }: MapComponentProps) {
+export default function MapComponent({ location }: MapComponentProps) {
   if (!location) return null;
 
   return (
@@ -33,37 +25,8 @@ export default function MapComponent({ location, restaurants = [] }: MapComponen
         latitudeDelta: 0.02, // zoomed in slightly closer for city tracking
         longitudeDelta: 0.02,
       }}
-    >
-      {restaurants.map(r => (
-        <Marker 
-          key={r.id} 
-          coordinate={{latitude: r.latitude, longitude: r.longitude}} 
-          title={r.name} 
-          description={r.tags.join(', ')}
-        >
-           <View style={styles.restaurantPin}>
-             <IconSymbol name="fork.knife" size={12} color="#FFFFFF" />
-           </View>
-        </Marker>
-      ))}
-    </MapView>
+    />
   );
 }
 
-const styles = StyleSheet.create({
-  restaurantPin: {
-    backgroundColor: '#10B981',
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-});
+const styles = StyleSheet.create({});
