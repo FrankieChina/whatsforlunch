@@ -10,42 +10,60 @@ interface MapComponentProps {
       longitude: number;
     }
   } | null;
+  restaurants?: Array<{
+    id: string;
+    name: string;
+    latitude: number;
+    longitude: number;
+    tags: string[];
+  }>;
 }
 
-export default function MapComponent({ location }: MapComponentProps) {
+export default function MapComponent({ location, restaurants = [] }: MapComponentProps) {
   if (!location) return null;
 
   return (
     <MapView 
       style={StyleSheet.absoluteFillObject}
+      showsUserLocation={true}
+      followsUserLocation={true}
       initialRegion={{
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
+        latitudeDelta: 0.02, // zoomed in slightly closer for city tracking
+        longitudeDelta: 0.02,
       }}
     >
-      <Marker coordinate={{latitude: location.coords.latitude, longitude: location.coords.longitude}}>
-        <View style={styles.centerPin}>
-          <IconSymbol name="person.fill" size={16} color="#FFFFFF" />
-        </View>
-      </Marker>
+      {restaurants.map(r => (
+        <Marker 
+          key={r.id} 
+          coordinate={{latitude: r.latitude, longitude: r.longitude}} 
+          title={r.name} 
+          description={r.tags.join(', ')}
+        >
+           <View style={styles.restaurantPin}>
+             <IconSymbol name="fork.knife" size={12} color="#FFFFFF" />
+           </View>
+        </Marker>
+      ))}
     </MapView>
   );
 }
 
 const styles = StyleSheet.create({
-  centerPin: {
-    backgroundColor: '#D95B00',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  restaurantPin: {
+    backgroundColor: '#10B981',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#D95B00',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
 });

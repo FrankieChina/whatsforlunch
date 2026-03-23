@@ -1,13 +1,17 @@
 import { Image } from 'expo-image';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Platform, TextInput } from 'react-native';
-import { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Platform, TextInput } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState, useEffect, useContext } from 'react';
 import * as Location from 'expo-location';
 import MapComponent from '@/components/MapComponent';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { StatusBar } from 'expo-status-bar';
+import { PreferencesContext } from '@/context/PreferencesContext';
 
 export default function KitchenScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const { dietaryRestrictions } = useContext(PreferencesContext);
+  const [mockRestaurants, setMockRestaurants] = useState<any[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -15,8 +19,23 @@ export default function KitchenScreen() {
       if (status !== 'granted') return;
       let loc = await Location.getCurrentPositionAsync({});
       setLocation(loc);
+      
+      // Generate some mock restaurants around their location
+      setMockRestaurants([
+        { id: '1', name: 'Green Bowl', latitude: loc.coords.latitude + 0.002, longitude: loc.coords.longitude + 0.002, tags: ['Vegan', 'Vegetarian'] },
+        { id: '2', name: 'Steakhouse', latitude: loc.coords.latitude - 0.002, longitude: loc.coords.longitude + 0.002, tags: ['Keto', 'Paleo'] },
+        { id: '3', name: 'Gluten Free Bakery', latitude: loc.coords.latitude + 0.002, longitude: loc.coords.longitude - 0.002, tags: ['Gluten-Free'] },
+        { id: '4', name: 'Healthy Bites', latitude: loc.coords.latitude - 0.002, longitude: loc.coords.longitude - 0.003, tags: ['Vegan', 'Gluten-Free'] },
+        { id: '5', name: 'Burger Joint', latitude: loc.coords.latitude + 0.004, longitude: loc.coords.longitude, tags: [] },
+      ]);
     })();
   }, []);
+
+  // Filter restaurants by user's dietary restrictions
+  const filteredRestaurants = mockRestaurants.filter(r => {
+    if (dietaryRestrictions.length === 0) return true; // Show all if no restrictions
+    return dietaryRestrictions.some(diet => r.tags.includes(diet));
+  });
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -56,7 +75,7 @@ export default function KitchenScreen() {
         <View style={styles.mapCard}>
            {location ? (
              <View style={styles.mapInner}>
-               <MapComponent location={location} />
+               <MapComponent location={location} restaurants={filteredRestaurants} />
              </View>
            ) : (
              <Image 

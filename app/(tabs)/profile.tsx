@@ -1,10 +1,15 @@
-import React from 'react';
-import { StyleSheet, View, Text, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image, Modal } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
+import { PreferencesContext } from '@/context/PreferencesContext';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { dietaryRestrictions, toggleRestriction } = useContext(PreferencesContext);
+  const availableDiets = ['Vegan', 'Vegetarian', 'Gluten-Free', 'Keto', 'Paleo'];
+  const [isDietModalVisible, setDietModalVisible] = useState(false);
 
   const handleLogout = () => {
     // In the future this will call Firebase auth.signOut()
@@ -42,11 +47,14 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>Preferences</Text>
           <View style={styles.cardGroup}>
             
-            <TouchableOpacity style={styles.cardRow}>
+            <TouchableOpacity style={styles.cardRow} onPress={() => setDietModalVisible(true)}>
               <View style={styles.cardIcon}>
                 <IconSymbol name="leaf.fill" size={18} color="#10B981" />
               </View>
               <Text style={styles.cardText}>Dietary Restrictions</Text>
+              {dietaryRestrictions.length > 0 && (
+                 <Text style={styles.selectionText}>{dietaryRestrictions.length} selected</Text>
+              )}
               <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
             </TouchableOpacity>
             
@@ -99,6 +107,46 @@ export default function ProfileScreen() {
         </View>
 
       </ScrollView>
+
+      {/* Diet Modal */}
+      <Modal
+        visible={isDietModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setDietModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+               <Text style={styles.modalTitle}>Dietary Restrictions</Text>
+               <TouchableOpacity onPress={() => setDietModalVisible(false)} style={styles.closeModalBtn}>
+                   <IconSymbol name="xmark" size={20} color="#6B7280" />
+               </TouchableOpacity>
+            </View>
+            <Text style={styles.modalSub}>Select your dietary preferences to neatly filter restaurants on the map.</Text>
+            
+            <View style={styles.chipsContainerModal}>
+              {availableDiets.map(diet => {
+                 const isActive = dietaryRestrictions.includes(diet);
+                 return (
+                   <TouchableOpacity 
+                     key={diet} 
+                     style={[styles.chipModal, isActive && styles.chipActive]} 
+                     onPress={() => toggleRestriction(diet)}
+                   >
+                     <Text style={[styles.chipTextModal, isActive && styles.chipTextActive]}>{diet}</Text>
+                   </TouchableOpacity>
+                 );
+              })}
+            </View>
+            
+            <TouchableOpacity style={styles.saveBtn} onPress={() => setDietModalVisible(false)}>
+               <Text style={styles.saveBtnText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -217,6 +265,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1F2937',
   },
+  selectionText: {
+    fontSize: 14,
+    color: '#10B981',
+    fontWeight: '700',
+    marginRight: 8,
+  },
   cardDivider: {
     height: 1,
     backgroundColor: '#F3EFE9',
@@ -245,5 +299,76 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     fontSize: 16,
     fontWeight: '700',
-  }
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1F2937',
+  },
+  closeModalBtn: {
+    padding: 8,
+    backgroundColor: '#F3EFE9',
+    borderRadius: 20,
+  },
+  modalSub: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  chipsContainerModal: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 32,
+  },
+  chipModal: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#F3EFE9',
+    borderWidth: 1,
+    borderColor: '#E5DFD3',
+  },
+  chipTextModal: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  chipActive: {
+    backgroundColor: '#D1FAE5',
+    borderColor: '#10B981',
+  },
+  chipTextActive: {
+    color: '#065F46',
+  },
+  saveBtn: {
+    backgroundColor: '#D95B00',
+    paddingVertical: 16,
+    borderRadius: 24,
+    alignItems: 'center',
+  },
+  saveBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
 });
